@@ -1,57 +1,58 @@
-// This is the service worker that runs in the background.
-// It listens for events and handles the logic that affects the browser,
-// such as sending notifications.
-
-// A simple map to store original titles for restoration.
-const tabTitles = {};
+// background.js
 
 // Listener for messages from the content script.
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message.action === "startObservingTitle") {
-    // Store the original title.
-    tabTitles[sender.tab.id] = message.title;
+// It's now an async function to handle storage operations.
+chrome.runtime.onMessage.addListener(async (message, sender) => {
+  const tabId = sender.tab.id;
 
-    // This script runs a function in the tab's context to change the title.
+  if (message.action === "startObservingTitle") {
+    // Save the tab's original title to session storage.
+    await chrome.storage.session.set({ [tabId]: message.title });
+    
+    // Update the tab's title to show the loading indicator.
     chrome.scripting.executeScript({
-      target: { tabId: sender.tab.id },
+      target: { tabId: tabId },
       func: (title) => {
         document.title = '⏳ ' + title;
       },
-      args: [tabTitles[sender.tab.id]]
+      args: [message.title]
     });
 
   } else if (message.action === "taskCompleted") {
-    // The response is complete, handle the title and notification.
-    const originalTitle = tabTitles[sender.tab.id];
+    // Retrieve the original title from session storage.
+    const data = await chrome.storage.session.get(tabId.toString());
+    const originalTitle = data[tabId];
 
-    // Restore the title.
-    chrome.scripting.executeScript({
-      target: { tabId: sender.tab.id },
-      func: (title) => {
-        document.title = title;
-      },
-      args: [originalTitle]
-    });
+    if (originalTitle) {
+      // Restore the original title.
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: (title) => {
+          document.title = title;
+        },
+        args: [originalTitle]
+      });
 
-    // Check if the tab that sent the message is active.
-    chrome.tabs.get(sender.tab.id, (tab) => {
-      if (!tab.active) {
-        chrome.notifications.create({
-          type: "basic",
-          iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(tab.url).hostname,
-          title: "AI Task Complete!",
-          message: `The page "${originalTitle}" has finished its task.`
-        });
-      }
-    });
+      // Check if the tab is active before sending a notification.
+      chrome.tabs.get(tabId, (tab) => {
+        if (!tab.active) {
+          chrome.notifications.create({
+            type: "basic",
+            iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=" + new URL(tab.url).hostname,
+            title: "AI Task Complete!",
+            message: `The page "${originalTitle}" has finished its task.`
+          });
+        }
+      });
 
-    delete tabTitles[sender.tab.id];
+      // Clean up by removing the title from storage.
+      await chrome.storage.session.remove(tabId.toString());
+    }
   }
 });
 
 // Programmatically inject the content script when a new tab is created or updated.
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // Only inject if the page is fully loaded and it's a ChatGPT URL.
   if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith("https://chatgpt.com/")) {
     chrome.scripting.executeScript({
       target: { tabId: tabId },
