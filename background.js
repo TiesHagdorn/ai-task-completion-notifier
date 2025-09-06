@@ -26,18 +26,16 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
         args: [originalTitle]
       });
 
-      // Check the user's preference before showing a notification.
-      chrome.storage.sync.get({ showNotification: true }, (settings) => {
-        if (settings.showNotification) {
-          console.log("Attempting to create notification (user enabled)...");
-          chrome.notifications.create({
-            type: "basic",
-            iconUrl: "icon128.png",
-            title: "AI Task Complete!",
-            message: `The page "${originalTitle}" has finished its task.`
-          });
-        }
-      });
+      const { showNotifications } = await chrome.storage.sync.get({ showNotifications: true });
+      if (showNotifications) {
+        console.log("Attempting to create notification...");
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: "icon128.png",
+          title: "AI Task Complete!",
+          message: `The page "${originalTitle}" has finished its task.`
+        });
+      }
 
       await chrome.storage.session.remove(tabId.toString());
     }
@@ -45,10 +43,12 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith("https://chatgpt.com/")) {
+  const isSupportedUrl = tab.url && (tab.url.startsWith("https://chatgpt.com/") || tab.url.startsWith("https://gemini.google.com/"));
+  if (changeInfo.status === 'complete' && isSupportedUrl) {
     chrome.scripting.executeScript({
       target: { tabId: tabId },
       files: ['content.js']
     }).catch(err => console.error("Script injection failed:", err));
   }
 });
+

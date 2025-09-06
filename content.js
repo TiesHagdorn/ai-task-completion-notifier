@@ -1,49 +1,58 @@
-// content.js
-
 // This script runs in the context of the web page.
 // It watches for changes to detect when an AI response is complete.
 
-// --- GUARD CLAUSE ---
-// This checks if the script has already been injected. If so, it stops.
 if (typeof window.aiTaskNotifierInjected === 'undefined') {
   window.aiTaskNotifierInjected = true;
 
-  const AI_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
-  let isGenerating = false;
-
-  function handleGenerationStart() {
-    if (isGenerating) return;
-    isGenerating = true;
-    console.log("AI Task Notifier: Generation started.");
-    chrome.runtime.sendMessage({
-      action: "startObservingTitle",
-      title: document.title
-    });
-  }
-
-  function handleGenerationEnd() {
-    if (!isGenerating) return;
-    isGenerating = false;
-    console.log("AI Task Notifier: Generation complete.");
-    chrome.runtime.sendMessage({
-      action: "taskCompleted"
-    });
-  }
-
-  const observer = new MutationObserver(() => {
-    const stopButton = document.querySelector(AI_STOP_BUTTON_SELECTOR);
-    if (stopButton) {
-      handleGenerationStart();
-    } else {
-      handleGenerationEnd();
+  const AI_PLATFORMS = {
+    'chatgpt.com': {
+      // For ChatGPT, we watch for the "stop" button
+      indicatorSelector: 'button[data-testid="stop-button"]'
+    },
+    'gemini.google.com': {
+      // For Gemini, we now watch for the specific "Stop response" button
+      indicatorSelector: 'button[aria-label="Stop response"]'
     }
-  });
+  };
 
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  const currentHost = window.location.hostname;
+  const platformConfig = AI_PLATFORMS[Object.keys(AI_PLATFORMS).find(host => currentHost.includes(host))];
 
-  console.log("AI Task Notifier: Now actively monitoring the page.");
+  if (platformConfig) {
+    let isGenerating = false;
 
-} // --- End of Guard Clause ---
+    function handleGenerationStart() {
+      if (isGenerating) return;
+      isGenerating = true;
+      console.log("AI Task Notifier: Generation started.");
+      chrome.runtime.sendMessage({
+        action: "startObservingTitle",
+        title: document.title
+      });
+    }
+
+    function handleGenerationEnd() {
+      if (!isGenerating) return;
+      isGenerating = false;
+      console.log("AI Task Notifier: Generation complete.");
+      chrome.runtime.sendMessage({ action: "taskCompleted" });
+    }
+
+    const observer = new MutationObserver(() => {
+      const indicatorElement = document.querySelector(platformConfig.indicatorSelector);
+      if (indicatorElement) {
+        handleGenerationStart();
+      } else {
+        handleGenerationEnd();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    console.log(`AI Task Notifier: Now actively monitoring ${currentHost}.`);
+  }
+}
+
