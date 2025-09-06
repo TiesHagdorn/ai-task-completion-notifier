@@ -4,7 +4,6 @@
   "description": "Notifies you when an AI task is complete.",
   "version": "1.0",
   "permissions": [
-    "tabs",
     "scripting",
     "notifications",
     "storage"
