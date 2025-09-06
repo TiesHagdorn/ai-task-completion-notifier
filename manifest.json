@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AI Task Notifier",
+  "version": "1.0",
+  "description": "Notifies you when an AI is done reasoning.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
