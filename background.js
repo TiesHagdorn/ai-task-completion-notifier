@@ -26,13 +26,17 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
         args: [originalTitle]
       });
 
-      console.log("Attempting to create notification...");
-      
-      chrome.notifications.create({
-        type: "basic",
-        iconUrl: "icon128.png", // Use the local icon
-        title: "AI Task Complete!",
-        message: `The page "${originalTitle}" has finished its task.`
+      // Check the user's preference before showing a notification.
+      chrome.storage.sync.get({ showNotification: true }, (settings) => {
+        if (settings.showNotification) {
+          console.log("Attempting to create notification (user enabled)...");
+          chrome.notifications.create({
+            type: "basic",
+            iconUrl: "icon128.png",
+            title: "AI Task Complete!",
+            message: `The page "${originalTitle}" has finished its task.`
+          });
+        }
       });
 
       await chrome.storage.session.remove(tabId.toString());

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "AI Task Notifier",
-  "version": "1.0",
+  "name": "AI Task completion notifier",
+  "version": "1.1",
   "description": "Notifies you when an AI is done reasoning.",
   "permissions": [
     "tabs",
@@ -17,5 +17,9 @@
   },
   "icons": {
     "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "options.html",
+    "default_icon": "icon128.png"
   }
 }
