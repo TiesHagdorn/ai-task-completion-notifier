@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AI Task completion notifier",
-  "version": "1.1",
-  "description": "Notifies you when an AI is done reasoning.",
+  "description": "Notifies you when an AI task is complete.",
+  "version": "1.0",
   "permissions": [
     "tabs",
     "scripting",
@@ -11,17 +11,18 @@
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
-    "https://gemini.google.com/*"
+    "https://gemini.google.com/*",
+    "https://claude.ai/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
     "default_popup": "options.html",
     "default_icon": "icon128.png"
   },
   "icons": {
     "128": "icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
   }
 }
 

@@ -1,24 +1,32 @@
 // This script runs in the context of the web page.
 // It watches for changes to detect when an AI response is complete.
 
+// --- GUARD CLAUSE ---
+// This prevents the script from being injected multiple times.
 if (typeof window.aiTaskNotifierInjected === 'undefined') {
   window.aiTaskNotifierInjected = true;
 
-  const AI_PLATFORMS = {
+  // Configuration for each supported AI site.
+  // Each site has a unique selector to find its "generating" indicator.
+  const SITE_CONFIG = {
     'chatgpt.com': {
-      // For ChatGPT, we watch for the "stop" button
-      indicatorSelector: 'button[data-testid="stop-button"]'
+      indicatorSelector: 'button[data-testid="stop-button"]',
     },
     'gemini.google.com': {
-      // For Gemini, we now watch for the specific "Stop response" button
-      indicatorSelector: 'button[aria-label="Stop response"]'
+      indicatorSelector: 'button[aria-label="Stop response"]',
+    },
+    'claude.ai': {
+      // Claude shows a button with the aria-label "Stop response" while generating.
+      indicatorSelector: 'button[aria-label="Stop response"]',
     }
   };
 
+  // Determine which site we're on.
   const currentHost = window.location.hostname;
-  const platformConfig = AI_PLATFORMS[Object.keys(AI_PLATFORMS).find(host => currentHost.includes(host))];
+  const config = SITE_CONFIG[Object.keys(SITE_CONFIG).find(host => currentHost.includes(host))];
 
-  if (platformConfig) {
+  // Only run the script if we are on a supported site.
+  if (config) {
     let isGenerating = false;
 
     function handleGenerationStart() {
@@ -27,7 +35,7 @@ if (typeof window.aiTaskNotifierInjected === 'undefined') {
       console.log("AI Task Notifier: Generation started.");
       chrome.runtime.sendMessage({
         action: "startObservingTitle",
-        title: document.title
+        title: document.title,
       });
     }
 
@@ -35,11 +43,15 @@ if (typeof window.aiTaskNotifierInjected === 'undefined') {
       if (!isGenerating) return;
       isGenerating = false;
       console.log("AI Task Notifier: Generation complete.");
-      chrome.runtime.sendMessage({ action: "taskCompleted" });
+      chrome.runtime.sendMessage({
+        action: "taskCompleted",
+      });
     }
 
+    // Use a MutationObserver to instantly react to page changes.
     const observer = new MutationObserver(() => {
-      const indicatorElement = document.querySelector(platformConfig.indicatorSelector);
+      const indicatorElement = document.querySelector(config.indicatorSelector);
+
       if (indicatorElement) {
         handleGenerationStart();
       } else {
@@ -47,12 +59,13 @@ if (typeof window.aiTaskNotifierInjected === 'undefined') {
       }
     });
 
+    // Start observing the entire document.
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
 
-    console.log(`AI Task Notifier: Now actively monitoring ${currentHost}.`);
+    console.log("AI Task Notifier: Now actively monitoring the page.");
   }
 }
 
