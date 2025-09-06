@@ -1,6 +1,6 @@
 # ChatGPT Task Notifier
 
-A Chrome extension that adds a loading icon (⏳) to the ChatGPT tab while it's reasoning and (optionally) notifies you when it's finished.
+A Chrome extension that adds a loading icon (⏳) to the AI tab while it's reasoning and (optionally) notifies you when it's finished.
 
 ## Installation
 
@@ -11,4 +11,4 @@ A Chrome extension that adds a loading icon (⏳) to the ChatGPT tab while it's 
 
 ## Usage
 
-The extension works automatically on the ChatGPT website. Click the extension icon in your toolbar to toggle desktop notifications on or off.
+The extension works automatically on the ChatGPT, Gemini and Claude websites. Click the extension icon in your toolbar to toggle desktop notifications on or off.

@@ -41,16 +41,18 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
       });
 
       // Check the user's preference from the options popup
-      const { showNotifications } = await chrome.storage.sync.get({ showNotifications: true });
+      // CORRECTED: 'showNotification' (singular) is now used
+      const { showNotification } = await chrome.storage.sync.get({ showNotification: true });
 
       // If notifications are enabled, create one
-      if (showNotifications) {
+      // CORRECTED: 'showNotification' (singular) is now used
+      if (showNotification) {
         const aiName = getAiName(tabUrl); // Get the dynamic name
         chrome.notifications.create({
           type: "basic",
           iconUrl: "icon128.png",
           title: "AI Task Complete!",
-          message: `${aiName} has finished its task.` // Updated message
+          message: `${aiName} has finished its task.`
         });
       }
 
