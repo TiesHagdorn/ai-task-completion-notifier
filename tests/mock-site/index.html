@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock AI Site</title>
+</head>
+<body>
+    <h1>Mock AI Interface</h1>
+    <div id="controls">
+        <button id="start-chatgpt">Start ChatGPT Task</button>
+        <button id="start-gemini">Start Gemini Task</button>
+        <button id="start-claude">Start Claude Task</button>
+        <button id="stop-task">Stop Task (Finish Generation)</button>
+    </div>
+
+    <div id="app-container">
+        <!-- AI content will go here -->
+    </div>
+
+    <script>
+        const appContainer = document.getElementById('app-container');
+
+        // Helper to clear container
+        function clear() {
+            appContainer.innerHTML = '';
+        }
+
+        document.getElementById('start-chatgpt').addEventListener('click', () => {
+            clear();
+            // ChatGPT uses data-testid="stop-button"
+            const btn = document.createElement('button');
+            btn.setAttribute('data-testid', 'stop-button');
+            btn.innerText = 'Stop generating';
+            appContainer.appendChild(btn);
+        });
+
+        document.getElementById('start-gemini').addEventListener('click', () => {
+            clear();
+            // Gemini uses aria-label="Stop response"
+            const btn = document.createElement('button');
+            btn.setAttribute('aria-label', 'Stop response');
+            btn.innerText = 'Stop response';
+            appContainer.appendChild(btn);
+        });
+
+        document.getElementById('start-claude').addEventListener('click', () => {
+            clear();
+            // Claude uses aria-label="Stop response"
+            const btn = document.createElement('button');
+            btn.setAttribute('aria-label', 'Stop response');
+            btn.innerText = 'Stop response';
+            appContainer.appendChild(btn);
+        });
+
+        document.getElementById('stop-task').addEventListener('click', () => {
+            clear();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "ai-task-completion-notifier",
+  "version": "1.1.0",
+  "description": "A Chrome extension that notifies you when it finishes, and adds a loading icon (⏳) to the AI tab while it's reasoning.",
+  "main": "background.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "jest-puppeteer": "^11.0.0",
+    "puppeteer": "^24.33.1"
+  }
+}
